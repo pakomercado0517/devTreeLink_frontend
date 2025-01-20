@@ -57,35 +57,42 @@ export default function LinkTreeView() {
 
   const links: SocialNetworks[] = JSON.parse(user.links);
   const handleEnableLink = (socialNetwork: string) => {
-    const updatedLink = devTreeLinks.map((link) => {
+    const updatedLinks = devTreeLinks.map((link) => {
       if (link.name === socialNetwork) {
         if (isValidUrl(link.url)) {
           return { ...link, enabled: !link.enabled };
         } else {
-          toast.error("URL inválida, verifícala e intenta de nuevo");
+          toast.error("URL no Válida");
         }
       }
       return link;
     });
 
-    setDevTreeLinks(updatedLink);
+    setDevTreeLinks(updatedLinks);
 
     let updatedItems: SocialNetworks[] = [];
-    const selectedSocialNetwork = updatedLink.find(
+    const selectedSocialNetwork = updatedLinks.find(
       (link) => link.name === socialNetwork,
     );
-
     if (selectedSocialNetwork?.enabled) {
-      const id =
-        links.length > 0
-          ? Math.max(...links.map((link) => link.id || 0)) + 1
-          : 1;
+      const id = links.filter((link) => link.id).length + 1;
       if (links.some((link) => link.name === socialNetwork)) {
-        updatedItems = links.map((link) =>
-          link.name === socialNetwork ? { ...link, enabled: true, id } : link,
-        );
+        updatedItems = links.map((link) => {
+          if (link.name === socialNetwork) {
+            return {
+              ...link,
+              enabled: true,
+              id,
+            };
+          } else {
+            return link;
+          }
+        });
       } else {
-        const newItem = { ...selectedSocialNetwork, id };
+        const newItem = {
+          ...selectedSocialNetwork,
+          id,
+        };
         updatedItems = [...links, newItem];
       }
     } else {
@@ -94,36 +101,32 @@ export default function LinkTreeView() {
       );
       updatedItems = links.map((link) => {
         if (link.name === socialNetwork) {
-          return { ...link, id: 0, enabled: false };
+          return {
+            ...link,
+            id: 0,
+            enabled: false,
+          };
         } else if (
           link.id > indexToUpdate &&
           indexToUpdate !== 0 &&
           link.id === 1
         ) {
-          return { ...link, id: link.id - 1 };
+          return {
+            ...link,
+            id: link.id - 1,
+          };
         } else {
           return link;
         }
       });
-
-      // Reorganizar IDs consecutivos
-      // Reorganizar IDs consecutivos
-      updatedItems = updatedItems
-        .filter((link) => link.enabled || link.id === 0) // Mantener links deshabilitados
-        .sort((a, b) => a.id - b.id)
-        .map((link, index) =>
-          link.enabled ? { ...link, id: index + 1 } : link,
-        ); // Asignar ID solo a los habilitados
     }
 
-    queryClient.setQueryData<User>(["user"], (prevData): User => {
-      if (prevData) {
-        return {
-          ...prevData,
-          links: JSON.stringify(updatedItems),
-        };
-      }
-      return user;
+    // Almacenar en la base de datos
+    queryClient.setQueryData(["user"], (prevData: User) => {
+      return {
+        ...prevData,
+        links: JSON.stringify(updatedItems),
+      };
     });
   };
 

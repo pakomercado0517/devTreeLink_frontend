@@ -22,6 +22,8 @@ export default function DevTree({ data }: DevTreeProps) {
     JSON.parse(data.links).filter((item: SocialNetworks) => item.enabled),
   );
 
+  console.log("enabledLinks", enabledLinks);
+
   useEffect(() => {
     setEnabledLinks(
       JSON.parse(data.links).filter((item: SocialNetworks) => item.enabled),
