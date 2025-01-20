@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { social } from "../data/social";
 import DevTreeInput from "../components/DevTreeInput";
